@@ -10,7 +10,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class Util {
 	public static String convertStreamToString(java.io.InputStream is) {
-		java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+		java.util.Scanner s = new java.util.Scanner(is);
+		s.useDelimiter("\\A");
 
 		return s.hasNext() ? s.next() : "";
 	}

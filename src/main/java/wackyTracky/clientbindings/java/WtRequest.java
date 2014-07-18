@@ -8,7 +8,52 @@ import wackyTracky.clientbindings.java.api.Session;
 
 public class WtRequest {
 	public enum ConnError {
-		CONN_REFUSED, HTTP_404, HTTP_500, IOException;
+		CONN_REFUSED, HTTP_404, HTTP_500, IOException, UNKNOWN_HOST_DNS("Could not find host in DNS"), REQDURINGFORCEOFFLINE("Tried to make a HTTP request while offline mode is set.");
+
+		public final String description;
+
+		private ConnError() {
+			this.description = this.toString();
+		}
+
+		private ConnError(String description) {
+			this.description = description;
+		}
+	}
+
+	public static class ConnException extends Exception {
+		private final WtResponse resp;
+
+		public ConnException(WtResponse wtResponse) {
+			this.resp = wtResponse;
+		}
+
+		public String getDescription() {
+			return this.resp.err.description;
+		}
+
+		public boolean isOneOf(ConnError... possibleCauses) {
+			for (ConnError possibleCause : possibleCauses) {
+				if (possibleCause == this.resp.err) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public void println() {
+			System.err.println(this.toString());
+		}
+
+		@Override
+		public String toString() {
+			ObjectFieldSerializer ofs = new ObjectFieldSerializer(this.resp);
+			ofs.include("status");
+			ofs.include("err");
+
+			return "ConnException: " + ofs.toString();
+		}
 	}
 
 	private WtResponse resp;
@@ -16,7 +61,12 @@ public class WtRequest {
 	private final UriBuilder builder;
 	private final Session session;
 
+	private static int lastConnId = 0;
+	private final int connId;
+
 	public WtRequest(Session session, String method) {
+		this.connId = WtRequest.lastConnId++;
+
 		this.session = session;
 		this.builder = UriBuilder.fromPath(method);
 		this.builder.port(session.getPort());
@@ -35,11 +85,11 @@ public class WtRequest {
 	public WtResponse go() {
 		URI uri = this.builder.build();
 
-		System.out.println("req: " + uri.toString());
+		System.out.println("httpconn " + this.connId + " req: " + uri.toString());
 
-		WtResponse res = new WtResponse(uri, this.session);
+		WtResponse res = new WtResponse(uri, this.session, this.connId);
 
-		System.out.println("res: " + res);
+		System.out.println("httpconn " + this.connId + " res: " + res);
 
 		return res;
 	}

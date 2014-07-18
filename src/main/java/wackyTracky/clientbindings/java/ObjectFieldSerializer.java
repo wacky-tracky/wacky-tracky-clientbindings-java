@@ -8,14 +8,24 @@ public class ObjectFieldSerializer {
 		return new ObjectFieldSerializer(o);
 	}
 
-	private final Object subject;
+	private final Object instance;
+	private final Class<?> clazz;
 
 	private final Vector<Field> fields = new Vector<Field>();
 
-	public ObjectFieldSerializer(Object subject) {
-		this.subject = subject;
+	public ObjectFieldSerializer(Class<?> clazz) {
+		this(clazz, null);
+	}
+
+	public ObjectFieldSerializer(Class<?> clazz, Object instance) {
+		this.clazz = clazz;
+		this.instance = instance;
 
 		this.includeAllFields();
+	}
+
+	public ObjectFieldSerializer(Object instance) {
+		this(instance.getClass(), instance);
 	}
 
 	public ObjectFieldSerializer include(String... toInclude) {
@@ -38,10 +48,12 @@ public class ObjectFieldSerializer {
 		return this;
 	}
 
-	public void includeAllFields() {
-		for (Field f : this.subject.getClass().getFields()) {
+	public ObjectFieldSerializer includeAllFields() {
+		for (Field f : this.clazz.getFields()) {
 			this.fields.add(f);
 		}
+
+		return this;
 	}
 
 	@Override
@@ -51,7 +63,7 @@ public class ObjectFieldSerializer {
 		for (Field f : this.fields) {
 			try {
 				String v;
-				Object o = f.get(this.subject);
+				Object o = f.get(this.instance);
 
 				if (o == null) {
 					v = "<null>";

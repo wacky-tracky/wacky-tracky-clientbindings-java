@@ -5,6 +5,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import wackyTracky.clientbindings.java.WtRequest;
+import wackyTracky.clientbindings.java.WtResponse;
 import wackyTracky.clientbindings.java.api.Session;
 import wackyTracky.clientbindings.java.model.ItemList;
 import wackyTracky.clientbindings.java.model.ListOfLists;
@@ -35,4 +36,16 @@ public class TestListManagement {
 		Assert.assertTrue(lol.hasLists());
 	}
 
+	@Test
+	public void testListRename() throws Exception {
+		UnitTestingSession session = new UnitTestingSession();
+
+		ItemList list = session.reqGetList(1442);
+
+		WtResponse resp = session.reqListUpdate(list, "hi").response();
+
+		System.out.println(resp.content);
+
+		Assert.assertTrue(resp.isStatusOkAndJson());
+	}
 }
