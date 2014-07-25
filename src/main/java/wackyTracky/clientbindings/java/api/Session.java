@@ -2,13 +2,14 @@ package wackyTracky.clientbindings.java.api;
 
 import java.util.Vector;
 
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.ParseException;
 import wackyTracky.clientbindings.java.WtRequest;
 import wackyTracky.clientbindings.java.WtRequest.ConnException;
 import wackyTracky.clientbindings.java.model.Item;
 import wackyTracky.clientbindings.java.model.ItemList;
 import wackyTracky.clientbindings.java.model.ListOfLists;
+import wackyTracky.clientbindings.java.model.PendingAction;
+
+import com.google.gson.JsonObject;
 
 public class Session {
 	public final Vector<String> cookieMonster = new Vector<String>();
@@ -22,7 +23,7 @@ public class Session {
 		this.serverAddress = serverAddress;
 	}
 
-	public ListOfLists getListLists() throws ConnException, ParseException {
+	public ListOfLists getListLists() throws ConnException {
 		WtRequest reqListLists = this.reqListLists();
 		reqListLists.response().assertStatusOkAndJson();
 
@@ -80,6 +81,7 @@ public class Session {
 		req.response().assertStatusOkAndJson();
 
 		Item i = new Item(content);
+		i.pendingAction = PendingAction.NONE;
 		l.add(i);
 	}
 
@@ -89,16 +91,26 @@ public class Session {
 		return wtCreate;
 	}
 
+	public WtRequest reqDeleteItem(Item i) {
+		WtRequest req = new WtRequest(this, "deleteTask");
+		req.addArgumentInt("id", i.id);
+
+		return req;
+	}
+
+	public WtRequest reqDeleteList(ItemList list) {
+		WtRequest req = new WtRequest(this, "deleteList");
+		req.addArgumentInt("id", list.id);
+
+		return req;
+	}
+
 	public ItemList reqGetList(int listId) {
 		WtRequest reqGetList = new WtRequest(this, "getList");
 		reqGetList.addArgumentString("listId", Integer.toString(listId));
 		reqGetList.submit();
 
-		try {
-			return new ItemList(reqGetList.response().getContentJsonObject());
-		} catch (ParseException e) {
-			return null;
-		}
+		return new ItemList(reqGetList.response().getContentJsonObject());
 	}
 
 	public void reqListItems(ItemList l) throws ConnException {
@@ -109,21 +121,16 @@ public class Session {
 
 		reqGetListItems.response().assertStatusOkAndJson();
 
-		l.clear();
-
 		System.out.println(reqGetListItems.response().getContent());
 
-		try {
-			for (int i = 0; i < reqGetListItems.response().getContentJsonArray().size(); i++) {
-				JSONObject o = (JSONObject) reqGetListItems.response().getContentJsonArray().get(i);
+		for (int i = 0; i < reqGetListItems.response().getContentJsonArray().size(); i++) {
+			JsonObject o = reqGetListItems.response().getContentJsonArray().get(i).getAsJsonObject();
 
-				Item item = new Item(o);
+			Item item = new Item(o);
 
-				l.add(item);
-			}
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(o);
+
+			l.add(item);
 		}
 	}
 

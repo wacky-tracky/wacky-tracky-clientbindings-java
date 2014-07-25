@@ -7,13 +7,14 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.UnknownHostException;
 
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
 import wackyTracky.clientbindings.java.WtRequest.ConnError;
 import wackyTracky.clientbindings.java.WtRequest.ConnException;
 import wackyTracky.clientbindings.java.api.Session;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class WtResponse {
 	private class ConnErrorException extends Exception {
@@ -30,22 +31,25 @@ public class WtResponse {
 	public String contentType = "undefined";
 	private HttpURLConnection conn = null;
 
+	public static String userAgent = "wtClientbindingsJava";
+
 	private final Session session;
 
-	public WtResponse(URI uri, Session session, int connid) {
+	public WtResponse(URI uri, Session session, int reqno) {
 		this.session = session;
 
 		try {
 			if (WtConnMonitor.isOffline()) {
-				throw new ConnErrorException(ConnError.REQDURINGFORCEOFFLINE);
+				throw new ConnErrorException(ConnError.REQ_WHILE_OFFLINE);
 			}
 
 			this.conn = (HttpURLConnection) uri.toURL().openConnection();
+			this.conn.setRequestProperty("User-Agent", userAgent);
 			this.conn.setRequestMethod("GET");
 
 			for (String cookie : session.cookieMonster) {
 				this.conn.setRequestProperty("Cookie", cookie);
-				System.out.println("httpconn " + connid + " Sending cookie: " + cookie);
+				System.out.println("httpconn " + reqno + " Sending cookie: " + cookie);
 			}
 
 			this.contentType = this.conn.getHeaderField("Content-Type");
@@ -53,6 +57,15 @@ public class WtResponse {
 
 			if (this.conn.getResponseCode() != 200) {
 				this.content = Util.convertStreamToString(this.conn.getErrorStream());
+
+				switch (this.conn.getResponseCode()) {
+				case 500:
+					throw new ConnErrorException(ConnError.HTTP_500);
+				case 403:
+					throw new ConnErrorException(ConnError.HTTP_403);
+				default:
+					throw new IOException("Unhandled response code: " + this.conn.getResponseCode());
+				}
 			} else {
 				this.content = Util.convertStreamToString(this.conn.getInputStream());
 			}
@@ -64,22 +77,13 @@ public class WtResponse {
 			this.err = ConnError.UNKNOWN_HOST_DNS;
 		} catch (IOException e) {
 			System.out.println(e);
-			if (e.getMessage().contains("code: 500")) {
-				try {
-					this.content = (String) this.conn.getContent();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				this.err = ConnError.HTTP_500;
 
-			} else {
-				this.err = ConnError.IOException;
-			}
+			this.err = ConnError.IOException;
 		} catch (ConnErrorException e) {
 			this.err = e.err;
 		}
 
-		WtConnMonitor.updateStatus(this.err);
+		WtConnMonitor.updateStatus(this.err, reqno);
 	}
 
 	public void assertStatusOkAndJson() throws ConnException {
@@ -92,18 +96,31 @@ public class WtResponse {
 		return this.content;
 	}
 
-	public JSONArray getContentJsonArray() throws ParseException {
-		JSONParser parser = new JSONParser();
-		JSONArray a = (JSONArray) parser.parse(this.content);
+	public JsonArray getContentJsonArray() {
+		JsonElement a = this.getContentJsonElement();
+
+		if (a.isJsonArray()) {
+			return (JsonArray) a;
+		} else {
+			return null;
+		}
+	}
+
+	public JsonElement getContentJsonElement() {
+		JsonParser parser = new JsonParser();
+		JsonElement a = parser.parse(this.content);
 
 		return a;
 	}
 
-	public JSONObject getContentJsonObject() throws ParseException {
-		JSONParser parser = new JSONParser();
-		JSONObject o = (JSONObject) parser.parse(this.content);
+	public JsonObject getContentJsonObject() {
+		JsonElement a = this.getContentJsonElement();
 
-		return o;
+		if (a.isJsonObject()) {
+			return (JsonObject) a;
+		} else {
+			return null;
+		}
 	}
 
 	public String getContentType() {

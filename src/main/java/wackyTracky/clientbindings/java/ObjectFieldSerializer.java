@@ -1,6 +1,7 @@
 package wackyTracky.clientbindings.java;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Vector;
 
 public class ObjectFieldSerializer {
@@ -50,6 +51,10 @@ public class ObjectFieldSerializer {
 
 	public ObjectFieldSerializer includeAllFields() {
 		for (Field f : this.clazz.getFields()) {
+			if (Modifier.isTransient(f.getModifiers())) {
+				continue;
+			}
+
 			this.fields.add(f);
 		}
 
