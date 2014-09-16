@@ -18,7 +18,6 @@ public class DataStore {
 	private JSONObject getJson() {
 		JSONObject me = new JSONObject();
 		
-		me.
 		return me;
 	}
 

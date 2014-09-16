@@ -7,6 +7,7 @@ import wackyTracky.clientbindings.java.model.ItemList;
 
 public class TestCreateItem {
 	@Test
+	@Ignore
 	public void testCreateItem() throws Exception {
 		UnitTestingSession session = new UnitTestingSession();
 

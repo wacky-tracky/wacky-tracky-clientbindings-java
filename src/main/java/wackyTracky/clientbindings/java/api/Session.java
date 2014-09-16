@@ -89,10 +89,12 @@ public class Session {
 		return wtCreate;
 	}
 
-	public ItemList reqGetList(int listId) {
+	public ItemList reqGetList(int listId) throws ConnException {
 		WtRequest reqGetList = new WtRequest(this, "getList");
 		reqGetList.addArgumentString("listId", Integer.toString(listId));
 		reqGetList.submit();
+
+		reqGetList.response().assertStatusOkAndJson();
 
 		try {
 			return new ItemList(reqGetList.response().getContentJsonObject());
