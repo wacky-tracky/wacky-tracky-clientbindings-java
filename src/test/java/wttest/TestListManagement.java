@@ -1,5 +1,8 @@
 package wttest;
 
+import java.util.Random;
+import java.util.UUID;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -40,9 +43,17 @@ public class TestListManagement {
 	public void testListRename() throws Exception {
 		UnitTestingSession session = new UnitTestingSession();
 
-		ItemList list = session.reqGetList(1442);
+		ListOfLists listOfLists = session.getListLists();
 
-		WtResponse resp = session.reqListUpdate(list, "hi").response();
+		if (listOfLists.isEmpty()) {
+			throw new Exception("No valid lists to test with");
+		}
+
+		int randomId = (new Random()).nextInt(listOfLists.getLists().size());
+
+		ItemList list = listOfLists.getLists().get(randomId);
+
+		WtResponse resp = session.reqListUpdate(list, "random-" + UUID.randomUUID()).response();
 
 		System.out.println(resp.content);
 
