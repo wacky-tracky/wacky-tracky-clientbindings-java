@@ -23,7 +23,7 @@ public class Session {
 		this.serverAddress = serverAddress;
 	}
 
-	public ListOfLists getListLists() throws ConnException, ParseException {
+	public ListOfLists getListLists() throws ConnException {
 		WtRequest reqListLists = this.reqListLists();
 		reqListLists.response().assertStatusOkAndJson();
 
@@ -114,7 +114,7 @@ public class Session {
 
 		try {
 			return new ItemList(reqGetList.response().getContentJsonObject());
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			return null;
 		}
 	}

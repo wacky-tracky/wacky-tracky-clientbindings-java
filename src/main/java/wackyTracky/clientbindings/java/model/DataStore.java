@@ -54,19 +54,20 @@ public class DataStore {
 		this.listOfLists = new ListOfLists();
 	}
 
+	/**
+	private JsonObject getJson() {
 
-	private JSONObject getJson() {
 		JSONObject me = new JSONObject();
 		
 		return me;
 	}
+	*/
 
 	public void println() {
 		this.listOfLists.println();
 	}
 
 	public void save() {
-
 		JsonObject o = (JsonObject) new Gson().toJsonTree(this);
 		o.addProperty("version", 0);
 
