@@ -4,8 +4,6 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 
-import net.minidev.json.JSONObject;
-
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -14,6 +12,8 @@ import org.junit.Test;
 import wackyTracky.clientbindings.java.WtRequest;
 import wackyTracky.clientbindings.java.WtResponse;
 import wackyTracky.clientbindings.java.api.Session;
+
+import com.google.gson.JsonObject;
 
 public class TestAuthentication {
 	@BeforeClass
@@ -30,7 +30,7 @@ public class TestAuthentication {
 		Assert.assertEquals("http://hosted.wacky-tracky.com:8082/authenticate?username=unittest&password=unittest", req.toString());
 		Assert.assertNull(req.response().err);
 		Assert.assertTrue(req.response().isContentTypeJson());
-		Assert.assertEquals("unittest", req.response().getContentJsonObject().get("username"));
+		Assert.assertEquals("unittest", req.response().getContentJsonObject().get("username").getAsString());
 
 	}
 
@@ -41,26 +41,27 @@ public class TestAuthentication {
 
 		reqInit.submit();
 		Assert.assertTrue(reqInit.response().isContentTypeJson());
-		Assert.assertNull(reqInit.response().getContentJsonObject().get("username"));
+		Assert.assertTrue(reqInit.response().getContentJsonObject().has("username"));
+		Assert.assertTrue(reqInit.response().getContentJsonObject().get("username").isJsonNull());
 
 		WtResponse respLogin = session.reqAuthenticate("unittest", "unittest").submit().response();
 		Assert.assertTrue(respLogin.isStatusOk());
 
 		reqInit.submit();
-		JSONObject init = reqInit.response().getContentJsonObject();
+		JsonObject init = reqInit.response().getContentJsonObject();
 
 		Assert.assertTrue(reqInit.response().isStatusOk());
 		Assert.assertTrue(reqInit.response().isContentTypeJson());
-		Assert.assertEquals("unittest", init.get("username"));
+		Assert.assertEquals("unittest", init.get("username").getAsString());
 
 		WtResponse respLogout = session.logout().submit().response();
 
 		Assert.assertTrue(respLogout.isStatusOk());
 
 		WtResponse respInit2 = session.init().response();
-		JSONObject init2 = respInit2.getContentJsonObject();
+		JsonObject init2 = respInit2.getContentJsonObject();
 
-		Assert.assertNull(init2.get("username"));
+		Assert.assertTrue(init2.get("username").isJsonNull());
 	}
 
 	@Test

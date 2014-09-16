@@ -1,30 +1,35 @@
 package wackyTracky.clientbindings.java.model;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
 
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
-public class ListOfLists {
+public class ListOfLists implements Iterable<ItemList> {
 	public interface Listener {
 		public void fireNewList();
+
+		public void onListRemoved(ItemList list);
 	}
 
-	private final Vector<ItemList> lists = new Vector<ItemList>();
+	private final ArrayList<ItemList> lists = new ArrayList<ItemList>();
 
-	public final Vector<Listener> listeners = new Vector<Listener>();
+	public transient final Vector<Listener> listeners = new Vector<Listener>();
 
-	public ListOfLists() {}
+	public ListOfLists() {
+	}
 
-	public ListOfLists(JSONArray contentJson) {
-		Iterator<Object> it = contentJson.iterator();
+	public ListOfLists(JsonArray contentJson) {
+		Iterator<JsonElement> it = contentJson.iterator();
 
 		while (it.hasNext()) {
-			Object o = it.next();
+			JsonElement o = it.next();
 
-			if (o instanceof JSONObject) {
-				ItemList list = new ItemList((JSONObject) o);
+			if (o.isJsonObject()) {
+				ItemList list = new ItemList((JsonObject) o);
 
 				this.lists.add(list);
 			}
@@ -32,6 +37,14 @@ public class ListOfLists {
 	}
 
 	public ItemList add(ItemList itemList) {
+		for (Iterator<ItemList> it = this.lists.iterator(); it.hasNext();) {
+			ItemList existing = it.next();
+
+			if ((existing.id == 0) && existing.title.equals(itemList.title)) {
+				it.remove();
+			}
+		}
+
 		this.lists.add(itemList);
 
 		for (Listener l : this.listeners) {
@@ -55,7 +68,11 @@ public class ListOfLists {
 		return null;
 	}
 
-	public Vector<ItemList> getLists() {
+	public int getCount() {
+		return this.lists.size();
+	}
+
+	public ArrayList<ItemList> getLists() {
 		return this.lists;
 	}
 
@@ -65,6 +82,11 @@ public class ListOfLists {
 
 	public boolean isEmpty() {
 		return this.lists.isEmpty();
+	}
+
+	@Override
+	public Iterator<ItemList> iterator() {
+		return this.lists.iterator();
 	}
 
 	public void merge(ListOfLists listLists) {
@@ -85,8 +107,22 @@ public class ListOfLists {
 		}
 	}
 
+	public void remove(ItemList list) {
+		this.lists.remove(list);
+
+		for (Listener l : this.listeners) {
+			l.onListRemoved(list);
+		}
+	}
+
 	@Override
 	public String toString() {
 		return this.lists.toString();
+	}
+
+	public void removeAll(ArrayList<ItemList> toLocallyRemove) {
+		for (ItemList toRemove : toLocallyRemove) {
+			this.remove(toRemove);
+		}
 	}
 }

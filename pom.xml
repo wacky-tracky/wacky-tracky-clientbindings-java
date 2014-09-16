@@ -22,17 +22,7 @@
   		<artifactId>resteasy-jaxrs</artifactId>
   		<version>2.2.1.GA</version>
   	</dependency>
-  	<dependency>
-  		<groupId>org.codehaus.jackson</groupId>
-  		<artifactId>jackson-jaxrs</artifactId>
-  		<version>1.9.12</version>
-  	</dependency>
   	
-  	<dependency>
-	<groupId>org.bouncycastle</groupId>
-	<artifactId>bcpkix-jdk15on</artifactId>
-	<version>1.47</version>
-</dependency>
 
 <dependency>
 <artifactId>commons-lang</artifactId>
@@ -45,6 +35,10 @@
   <artifactId>json-smart</artifactId>
   <version>1.2</version>
  </dependency> 	
+	<groupId>com.google.code.gson</groupId>
+ 	<artifactId>gson</artifactId>
+ 	<version>2.2.4</version>
+ </dependency>
  <dependency>
  	<groupId>junit</groupId>
 	<artifactId>junit</artifactId>

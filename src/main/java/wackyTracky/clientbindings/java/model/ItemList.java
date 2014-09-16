@@ -1,13 +1,17 @@
 package wackyTracky.clientbindings.java.model;
 
+import java.util.Iterator;
 import java.util.Vector;
 
-import net.minidev.json.JSONObject;
 import wackyTracky.clientbindings.java.ObjectFieldSerializer;
+
+import com.google.gson.JsonObject;
 
 public class ItemList {
 	public interface Listener {
 		public void onItemAdded(Item i);
+
+		public void onItemRemoved(Item i);
 
 		public void onListChanged(ItemList list);
 
@@ -19,21 +23,43 @@ public class ItemList {
 
 	private final Vector<Item> items = new Vector<Item>();
 
-	public Vector<Listener> listeners = new Vector<Listener>();
+	public transient Vector<Listener> listeners = new Vector<Listener>();
 
-	public boolean existsOnServer = true;
+	public PendingAction pendingAction = PendingAction.NONE;
 
-	private int count = 0;
+	public ItemList() {
+		this.pendingAction = PendingAction.CREATE;
+	}
 
-	public ItemList() {}
-
-	public ItemList(JSONObject itemJson) {
-		this.title = (String) itemJson.get("title");
-		this.id = (Integer) itemJson.get("id");
-		this.count = (Integer) itemJson.get("count");
+	public ItemList(JsonObject itemJson) {
+		this.title = itemJson.get("title").getAsString();
+		this.id = itemJson.get("id").getAsInt();
 	}
 
 	public void add(Item item) {
+		for (Iterator<Item> it = this.items.iterator(); it.hasNext();) {
+			// remove local-only items (id=0) with duplicate content
+			Item existing = it.next();
+
+			if ((existing.id == 0) && existing.content.equals(item.content)) {
+				it.remove();
+				continue;
+			}
+
+			if (existing.id == item.id) {
+				if (existing.pendingAction == PendingAction.NONE) {
+					existing.merge(item);
+					existing.pendingAction = PendingAction.NONE;
+
+					for (Listener l : this.listeners) {
+						l.onItemAdded(item);
+					}
+
+					return;
+				}
+			}
+		}
+
 		this.items.add(item);
 
 		for (Listener l : this.listeners) {
@@ -52,7 +78,7 @@ public class ItemList {
 	}
 
 	public int getItemCount() {
-		return this.count;
+		return this.items.size();
 	}
 
 	public Vector<Item> getItems() {
@@ -65,7 +91,7 @@ public class ItemList {
 
 	public void merge(ItemList foreignList) {
 		this.title = foreignList.title;
-		this.existsOnServer = foreignList.existsOnServer;
+		this.pendingAction = foreignList.pendingAction;
 
 		this.fireListChanged();
 	}
@@ -75,6 +101,14 @@ public class ItemList {
 
 		for (Item i : this.getItems()) {
 			i.println();
+		}
+	}
+
+	public void remove(Item i) {
+		this.items.remove(i);
+
+		for (Listener l : this.listeners) {
+			l.onItemRemoved(i);
 		}
 	}
 
