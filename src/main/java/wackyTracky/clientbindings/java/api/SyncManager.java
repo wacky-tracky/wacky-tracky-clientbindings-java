@@ -52,6 +52,21 @@ public class SyncManager {
 		for (ItemList l : this.datastore.listOfLists.getLists()) {
 			toLocallyRemoveItems.put(l, new ArrayList<Item>());
 
+			try {
+				if (l.id == 0) {
+					ItemList byTitle = this.session.reqGetListByTitle(l.title);
+
+					if (byTitle == null) {
+						l.pendingAction = PendingAction.CREATE;
+					} else {
+						l.id = byTitle.id;
+					}
+
+				}
+			} catch (ConnException e) {
+				continue;
+			}
+
 			if (l.pendingAction != PendingAction.NONE) {
 				try {
 					switch (l.pendingAction) {

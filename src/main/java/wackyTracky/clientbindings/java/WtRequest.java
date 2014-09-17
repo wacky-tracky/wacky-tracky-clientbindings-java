@@ -8,7 +8,7 @@ import wackyTracky.clientbindings.java.api.Session;
 
 public class WtRequest {
 	public enum ConnError {
-		CONN_REFUSED, HTTP_404, HTTP_500, IOException, UNKNOWN_HOST_DNS("Could not find host in DNS"), REQ_WHILE_OFFLINE("Tried to make a HTTP request while offline mode is set."), HTTP_403;
+		CONN_REFUSED, HTTP_404, HTTP_500, IOException, UNKNOWN_HOST_DNS("Could not find host in DNS"), REQ_WHILE_OFFLINE("Tried to make a HTTP request while offline mode is set."), HTTP_403, USER_NOT_FOUND, USER_WRONG_PASSWORD;
 
 		public final String description;
 

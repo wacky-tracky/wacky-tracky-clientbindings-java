@@ -1,5 +1,8 @@
 package wackyTracky.clientbindings.java.api;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Vector;
 
 import wackyTracky.clientbindings.java.WtRequest;
@@ -64,7 +67,17 @@ public class Session {
 	public WtRequest reqAuthenticate(String username, String password) {
 		WtRequest req = new WtRequest(this, "authenticate");
 		req.addArgumentString("username", username);
-		req.addArgumentString("password", password);
+
+		MessageDigest md;
+		try {
+			md = MessageDigest.getInstance("SHA-1");
+			md.reset();
+			md.update(password.getBytes());
+			req.addArgumentString("password", new BigInteger(1, md.digest()).toString(16));
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return null;
+		}
 
 		return req;
 	}
@@ -108,6 +121,20 @@ public class Session {
 	public ItemList reqGetList(int listId) throws ConnException {
 		WtRequest reqGetList = new WtRequest(this, "getList");
 		reqGetList.addArgumentString("listId", Integer.toString(listId));
+		reqGetList.submit();
+
+		reqGetList.response().assertStatusOkAndJson();
+
+		try {
+			return new ItemList(reqGetList.response().getContentJsonObject());
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public ItemList reqGetListByTitle(String title) throws ConnException {
+		WtRequest reqGetList = new WtRequest(this, "getListByTitle");
+		reqGetList.addArgumentString("listTitle", title);
 		reqGetList.submit();
 
 		reqGetList.response().assertStatusOkAndJson();

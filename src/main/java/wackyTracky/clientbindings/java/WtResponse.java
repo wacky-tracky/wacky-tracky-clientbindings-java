@@ -58,6 +58,19 @@ public class WtResponse {
 			if (this.conn.getResponseCode() != 200) {
 				this.content = Util.convertStreamToString(this.conn.getErrorStream());
 
+				if (this.isContentTypeJson()) {
+					JsonObject o = this.getContentJsonObject();
+
+					if (o.has("uniqueType")) {
+						switch (o.get("uniqueType").getAsString()) {
+						case "user-not-found":
+							throw new ConnErrorException(ConnError.USER_NOT_FOUND);
+						case "user-wrong-password":
+							throw new ConnErrorException(ConnError.USER_WRONG_PASSWORD);
+						}
+					}
+				}
+
 				switch (this.conn.getResponseCode()) {
 				case 500:
 					throw new ConnErrorException(ConnError.HTTP_500);
