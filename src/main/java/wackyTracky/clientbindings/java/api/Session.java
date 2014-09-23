@@ -95,13 +95,27 @@ public class Session {
 
 		Item i = new Item(content);
 		i.pendingAction = PendingAction.NONE;
-		l.add(i);
+		l.container.addItem(i);
 	}
 
 	public WtRequest reqCreateList(String title) {
 		WtRequest wtCreate = new WtRequest(this, "createList");
 		wtCreate.addArgumentString("title", title);
 		return wtCreate;
+	}
+
+	public void reqCreateSubItem(Item itemRoot, String content) throws ConnException {
+		WtRequest req = new WtRequest(this, "createTask");
+		req.addArgumentInt("parentId", itemRoot.id);
+		req.addArgumentString("parentType", "item");
+		req.addArgumentString("content", content);
+		req.submit();
+
+		req.response().assertStatusOkAndJson();
+
+		Item i = new Item(content);
+		itemRoot.pendingAction = PendingAction.NONE;
+		itemRoot.container.addItem(i);
 	}
 
 	public WtRequest reqDeleteItem(Item i) {
@@ -146,6 +160,27 @@ public class Session {
 		}
 	}
 
+	public void reqListItems(Item parentItem) throws ConnException {
+		WtRequest reqGetListItems = new WtRequest(this, "listTasks");
+		reqGetListItems.addArgumentInt("task", parentItem.id);
+		reqGetListItems.addArgumentString("sort", "content");
+		reqGetListItems.submit();
+
+		reqGetListItems.response().assertStatusOkAndJson();
+
+		System.out.println(reqGetListItems.response().getContent());
+
+		for (int i = 0; i < reqGetListItems.response().getContentJsonArray().size(); i++) {
+			JsonObject o = reqGetListItems.response().getContentJsonArray().get(i).getAsJsonObject();
+
+			Item item = new Item(o);
+
+			System.out.println(o);
+
+			parentItem.container.addItem(item);
+		}
+	}
+
 	public void reqListItems(ItemList l) throws ConnException {
 		WtRequest reqGetListItems = new WtRequest(this, "listTasks");
 		reqGetListItems.addArgumentInt("list", l.id);
@@ -163,7 +198,7 @@ public class Session {
 
 			System.out.println(o);
 
-			l.add(item);
+			l.container.addItem(item);
 		}
 	}
 

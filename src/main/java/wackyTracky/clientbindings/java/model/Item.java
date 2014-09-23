@@ -9,6 +9,8 @@ public class Item {
 	public String content;
 	public PendingAction pendingAction = PendingAction.NONE;
 
+	public ItemContainer container = new ItemContainer();
+
 	public Item(JsonObject o) {
 		this.content = o.get("content").getAsString();
 		this.id = o.get("id").getAsInt();

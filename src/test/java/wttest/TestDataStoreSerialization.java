@@ -31,16 +31,16 @@ public class TestDataStoreSerialization {
 		ItemList listGeneral = this.ds.listOfLists.add(new ItemList());
 		listGeneral.title = "general";
 
-		listGeneral.add(new Item("general one"));
-		listGeneral.add(new Item("general two"));
-		listGeneral.add(new Item("general three"));
+		listGeneral.container.addItem(new Item("general one"));
+		listGeneral.container.addItem(new Item("general two"));
+		listGeneral.container.addItem(new Item("general three"));
 
 		ItemList listTwo = this.ds.listOfLists.add(new ItemList());
 		listTwo.title = "shopping";
 
-		listTwo.add(new Item("shopping one"));
-		listTwo.add(new Item("shopping two"));
-		listTwo.add(new Item("shopping three"));
+		listTwo.container.addItem(new Item("shopping one"));
+		listTwo.container.addItem(new Item("shopping two"));
+		listTwo.container.addItem(new Item("shopping three"));
 
 		this.ds.save();
 	}

@@ -49,55 +49,55 @@ public class SyncManager {
 		ArrayList<ItemList> toLocallyRemove = new ArrayList<ItemList>();
 		HashMap<ItemList, ArrayList<Item>> toLocallyRemoveItems = new HashMap<ItemList, ArrayList<Item>>();
 
-		for (ItemList l : this.datastore.listOfLists.getLists()) {
-			toLocallyRemoveItems.put(l, new ArrayList<Item>());
+		for (ItemList list : this.datastore.listOfLists.getLists()) {
+			toLocallyRemoveItems.put(list, new ArrayList<Item>());
 
 			try {
-				if (l.id == 0) {
-					ItemList byTitle = this.session.reqGetListByTitle(l.title);
+				if (list.id == 0) {
+					ItemList byTitle = this.session.reqGetListByTitle(list.title);
 
 					if (byTitle == null) {
-						l.pendingAction = PendingAction.CREATE;
+						list.pendingAction = PendingAction.CREATE;
 					} else {
-						l.id = byTitle.id;
+						list.id = byTitle.id;
 					}
 
 				}
 			} catch (ConnException e) {
-				continue;
+
 			}
 
-			if (l.pendingAction != PendingAction.NONE) {
+			if (list.pendingAction != PendingAction.NONE) {
 				try {
-					switch (l.pendingAction) {
+					switch (list.pendingAction) {
 					case CREATE:
-						this.create(l);
+						this.create(list);
 						break;
 					case DELETE:
-						this.deleteList(l);
-						toLocallyRemove.add(l);
+						this.deleteList(list);
+						toLocallyRemove.add(list);
 
 						break;
 					case NONE:
 						break;
 					default:
-						System.out.println("SyncManager does not handle: " + l.pendingAction);
+						System.out.println("SyncManager does not handle: " + list.pendingAction);
 					}
 				} catch (Exception e) {
 					this.exceptions.add(e);
 				}
 			}
 
-			for (Item i : new ArrayList<Item>(l.getItems())) {
+			for (Item i : new ArrayList<Item>(list.container.getItems())) {
 				try {
 					switch (i.pendingAction) {
 					case DELETE:
 						this.session.reqDeleteItem(i).response().assertStatusOkAndJson();
 
-						l.remove(i);
+						list.container.remove(i);
 						break;
 					case CREATE:
-						this.session.reqCreateItem(l, i.content);
+						this.session.reqCreateItem(list, i.content);
 
 						break;
 					case NONE:

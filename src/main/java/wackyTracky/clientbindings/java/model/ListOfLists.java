@@ -2,6 +2,7 @@ package wackyTracky.clientbindings.java.model;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Vector;
 
 import com.google.gson.JsonArray;
@@ -68,6 +69,12 @@ public class ListOfLists implements Iterable<ItemList> {
 		return null;
 	}
 
+	public ItemList getByRandom() {
+		int index = (new Random()).nextInt(this.lists.size());
+
+		return this.lists.get(index);
+	}
+
 	public int getCount() {
 		return this.lists.size();
 	}
@@ -115,14 +122,14 @@ public class ListOfLists implements Iterable<ItemList> {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return this.lists.toString();
-	}
-
 	public void removeAll(ArrayList<ItemList> toLocallyRemove) {
 		for (ItemList toRemove : toLocallyRemove) {
 			this.remove(toRemove);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return this.lists.toString();
 	}
 }

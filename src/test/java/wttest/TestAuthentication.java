@@ -27,7 +27,7 @@ public class TestAuthentication {
 		WtRequest req = session.reqAuthenticate("unittest", "unittest");
 		req.go();
 
-		Assert.assertEquals("http://hosted.wacky-tracky.com:8082/authenticate?username=unittest&password=unittest", req.toString());
+		Assert.assertEquals("http://hosted.wacky-tracky.com:8082/authenticate?username=unittest&password=94e060874450b5ea724bb6ce5ca7be4f6a73416b", req.toString());
 		Assert.assertNull(req.response().err);
 		Assert.assertTrue(req.response().isContentTypeJson());
 		Assert.assertEquals("unittest", req.response().getContentJsonObject().get("username").getAsString());
