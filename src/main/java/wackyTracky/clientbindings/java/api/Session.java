@@ -8,6 +8,7 @@ import java.util.Vector;
 import wackyTracky.clientbindings.java.WtRequest;
 import wackyTracky.clientbindings.java.WtRequest.ConnException;
 import wackyTracky.clientbindings.java.model.Item;
+import wackyTracky.clientbindings.java.model.ItemContainer.ItemContainerParent;
 import wackyTracky.clientbindings.java.model.ItemList;
 import wackyTracky.clientbindings.java.model.ListOfLists;
 import wackyTracky.clientbindings.java.model.PendingAction;
@@ -81,12 +82,12 @@ public class Session {
 
 		return req;
 	}
-
-	public void reqCreateItem(ItemList l, String content) throws Exception {
+  
+	public void reqCreateItem(ItemContainerParent parent  , String content) throws Exception {
 		WtRequest req = new WtRequest(this, "createTask");
-		req.addArgumentInt("parentId", l.id);
-		req.addArgumentString("parentType", "list");
-		req.addArgumentString("content", content);
+		req.addArgumentInt("parentId", parent.getId());
+		req.addArgumentString("parentType", parent.getServerType());
+		req.addArgumentString("content", content);  
 		req.submit();
 
 		System.out.println(req.response());
@@ -95,7 +96,7 @@ public class Session {
 
 		Item i = new Item(content);
 		i.pendingAction = PendingAction.NONE;
-		l.container.addItem(i);
+		parent.getContainer().addItem(i); 
 	}
 
 	public WtRequest reqCreateList(String title) {

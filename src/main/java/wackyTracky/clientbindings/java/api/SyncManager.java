@@ -10,6 +10,7 @@ import wackyTracky.clientbindings.java.WtRequest.ConnException;
 import wackyTracky.clientbindings.java.WtResponse;
 import wackyTracky.clientbindings.java.model.DataStore;
 import wackyTracky.clientbindings.java.model.Item;
+import wackyTracky.clientbindings.java.model.ItemContainer;
 import wackyTracky.clientbindings.java.model.ItemList;
 import wackyTracky.clientbindings.java.model.PendingAction;
 
@@ -88,36 +89,44 @@ public class SyncManager {
 				}
 			}
 
-			for (Item i : new ArrayList<Item>(list.container.getItems())) {
-				try {
-					switch (i.pendingAction) {
-					case DELETE:
-						this.session.reqDeleteItem(i).response().assertStatusOkAndJson();
-
-						list.container.remove(i);
-						break;
-					case CREATE:
-						this.session.reqCreateItem(list, i.content);
-
-						break;
-					case NONE:
-						break;
-					default:
-						System.out.println("Unsupported pending action: " + i.pendingAction);
-					}
-				} catch (ConnException e) {
-					if (e.isOneOf(ConnError.REQ_WHILE_OFFLINE)) {
-						continue;
-					} else {
-						e.printStackTrace();
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			syncItemContainer(list.container);
 		}
 
 		this.datastore.listOfLists.removeAll(toLocallyRemove);
 
+	}
+	
+	private void syncItemContainer(ItemContainer itemContainer) {
+		for (Item i : new ArrayList<Item>(itemContainer.getItems())) {
+			if (i.container.hasItems()) {    
+				syncItemContainer(i.container);
+			} 
+			
+			try {
+				switch (i.pendingAction) {     
+				case DELETE:
+					this.session.reqDeleteItem(i).response().assertStatusOkAndJson();
+
+					itemContainer.remove(i);
+					break;
+				case CREATE:  
+					this.session.reqCreateItem(itemContainer.getParent(), i.content);
+
+					break;
+				case NONE:
+					break;
+				default:
+					System.out.println("Unsupported pending action: " + i.pendingAction);
+				}
+			} catch (ConnException e) {
+				if (e.isOneOf(ConnError.REQ_WHILE_OFFLINE)) {
+					continue;
+				} else {
+					e.printStackTrace();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

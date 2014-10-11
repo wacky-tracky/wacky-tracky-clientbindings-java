@@ -1,22 +1,25 @@
 package wackyTracky.clientbindings.java.model;
 
 import wackyTracky.clientbindings.java.ObjectFieldSerializer;
+import wackyTracky.clientbindings.java.model.ItemContainer.ItemContainerParent;
 
 import com.google.gson.JsonObject;
 
-public class Item {
+public class Item implements ItemContainerParent {
 	public int id;
 	public String content;
 	public PendingAction pendingAction = PendingAction.NONE;
-
-	public ItemContainer container = new ItemContainer();
+ 
+	public ItemContainer container;
 
 	public Item(JsonObject o) {
+		container = new ItemContainer(this);
 		this.content = o.get("content").getAsString();
 		this.id = o.get("id").getAsInt();
 	}
 
 	public Item(String content2) {
+		container = new ItemContainer(this); 
 		this.content = content2;
 		this.pendingAction = PendingAction.CREATE;
 	}
@@ -36,5 +39,20 @@ public class Item {
 		o.include("id");
 
 		return o.toString();
+	}
+
+	@Override
+	public int getId() {
+		return this.id;
+	}
+
+	@Override 
+	public String getServerType() {
+		return "item";
+	}
+
+	@Override
+	public ItemContainer getContainer() {
+		return container;
 	}
 }

@@ -13,10 +13,27 @@ public class ItemContainer {
 		public void onListChanged();
 
 	}
+	
+	public interface ItemContainerParent {
+
+		int getId();
+		String getServerType();
+		ItemContainer getContainer(); 
+	}
+
+	private ItemContainerParent parent;
+	 
+	public ItemContainer(Item parent) {
+		this.parent = parent;
+	}
+	
+	public ItemContainer(ItemList parent) {
+		this.parent = parent; 
+	}
 
 	private final Vector<Item> items = new Vector<Item>();
 
-	public transient Vector<Listener> listeners = new Vector<Listener>();
+	public final transient Vector<Listener> listeners = new Vector<Listener>();
 
 	public void addItem(Item item) {
 		for (Iterator<Item> it = this.items.iterator(); it.hasNext();) {
@@ -91,5 +108,9 @@ public class ItemContainer {
 
 	public int size() {
 		return this.items.size();
+	}
+ 
+	public ItemContainerParent getParent() {
+		return null;
 	}
 }
