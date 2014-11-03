@@ -54,15 +54,6 @@ public class DataStore {
 		this.listOfLists = new ListOfLists();
 	}
 
-	/**
-	private JsonObject getJson() {
-
-		JSONObject me = new JSONObject();
-		
-		return me;
-	}
-	*/
-
 	public void println() {
 		this.listOfLists.println();
 	}

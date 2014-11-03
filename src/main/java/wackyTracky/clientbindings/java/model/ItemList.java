@@ -7,24 +7,38 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 public class ItemList implements ItemContainerParent {
-
 	public int id;
 
 	public String title;
 
-	public final ItemContainer container;
+	public transient final ItemContainer container;
 
 	public PendingAction pendingAction = PendingAction.NONE;
-  
+
 	public ItemList() {
-		container = new ItemContainer(this);
+		this.container = new ItemContainer(this);
 		this.pendingAction = PendingAction.CREATE;
 	}
 
 	public ItemList(JsonObject itemJson) {
-		container = new ItemContainer(this); 
+		this.container = new ItemContainer(this);
 		this.title = itemJson.get("title").getAsString();
 		this.id = itemJson.get("id").getAsInt();
+	}
+
+	@Override
+	public ItemContainer getContainer() {
+		return this.container;
+	}
+
+	@Override
+	public int getId() {
+		return this.id;
+	}
+
+	@Override
+	public String getServerType() {
+		return "list";
 	}
 
 	public void merge(ItemList foreignList) {
@@ -46,20 +60,5 @@ public class ItemList implements ItemContainerParent {
 	public String toString() {
 		Gson g = new GsonBuilder().setPrettyPrinting().create();
 		return g.toJson(this);
-	}
-
-	@Override
-	public int getId() {
-		return this.id;
-	}
-
-	@Override
-	public String getServerType() {
-		return "list";
-	}
-
-	@Override
-	public ItemContainer getContainer() {
-		return container;    
 	}
 }
