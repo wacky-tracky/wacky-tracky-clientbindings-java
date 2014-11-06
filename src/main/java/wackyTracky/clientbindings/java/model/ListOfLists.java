@@ -20,8 +20,7 @@ public class ListOfLists implements Iterable<ItemList> {
 
 	public transient final Vector<Listener> listeners = new Vector<Listener>();
 
-	public ListOfLists() {
-	}
+	public ListOfLists() {}
 
 	public ListOfLists(JsonArray contentJson) {
 		Iterator<JsonElement> it = contentJson.iterator();

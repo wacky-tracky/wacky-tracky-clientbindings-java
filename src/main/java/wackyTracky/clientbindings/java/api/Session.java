@@ -82,12 +82,12 @@ public class Session {
 
 		return req;
 	}
-  
-	public void reqCreateItem(ItemContainerParent parent  , String content) throws Exception {
+
+	public void reqCreateItem(ItemContainerParent parent, String content) throws Exception {
 		WtRequest req = new WtRequest(this, "createTask");
 		req.addArgumentInt("parentId", parent.getId());
 		req.addArgumentString("parentType", parent.getServerType());
-		req.addArgumentString("content", content);  
+		req.addArgumentString("content", content);
 		req.submit();
 
 		System.out.println(req.response());
@@ -96,7 +96,7 @@ public class Session {
 
 		Item i = new Item(content);
 		i.pendingAction = PendingAction.NONE;
-		parent.getContainer().addItem(i); 
+		parent.getContainer().addItem(i);
 	}
 
 	public WtRequest reqCreateList(String title) {
