@@ -7,12 +7,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 public class ItemList implements ItemContainerParent {
-
 	public int id;
 
 	public String title;
 
-	public final ItemContainer container;
+	public transient final ItemContainer container;
 
 	public PendingAction pendingAction = PendingAction.NONE;
 
