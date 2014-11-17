@@ -94,6 +94,24 @@ public class WtRequest {
 		return res;
 	}
 
+	public void handle(final WtCallbackHandler handler) {
+		handler.setRequest(this);
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					handler.submit();
+				} catch (ConnException e) {
+					handler.onException(e);
+					return;
+				}
+
+				handler.onSuccess();
+			}
+		}, "connnection-handler").start();
+	}
+
 	public WtResponse response() {
 		if (this.resp == null) {
 			this.submit();

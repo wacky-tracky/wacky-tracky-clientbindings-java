@@ -1,9 +1,21 @@
 package wackyTracky.clientbindings.java;
 
-public interface WtCallbackHandler {
-	public void submit();
+import wackyTracky.clientbindings.java.WtRequest.ConnException;
 
-	public void onSuccess();
+public abstract class WtCallbackHandler {
+	protected WtRequest request;
 
-	public void onException();
+	public abstract void onException(ConnException connException);
+
+	public abstract void onSuccess();;
+
+	public void setRequest(WtRequest wtRequest) {
+		this.request = wtRequest;
+	}
+
+	public void submit() throws ConnException {
+		if (this.request != null) {
+			this.request.response().assertStatusOkAndJson();
+		}
+	}
 }
